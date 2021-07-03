@@ -68,11 +68,11 @@ instance {-# OVERLAPPING #-} Semigroup (Last (Maybe a)) where
  (<>) (Last (Just (Just _))) b@(Last (Just (Just _))) = b
 
 instance {-# OVERLAPPABLE #-} Semigroup (Last a) where
-        a <> Last Nothing = a
-        _ <> b            = b
+   a <> Last Nothing = a
+   _ <> b            = b
 
 instance Monoid (Last a) where
-        mempty = Last Nothing
+   mempty = Last Nothing
 
 newtype User = User String deriving (Show, Generic)
 
