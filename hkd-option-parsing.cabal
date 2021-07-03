@@ -19,6 +19,13 @@ maintainer:         ssbothwell@gmail.com
 -- A copyright notice.
 -- copyright:
 -- category:
+
+common common-all
+  ghc-options:
+    -fmax-simplifier-iterations=20 -foptimal-applicative-do
+    -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  default-language: Haskell2010
+
 extra-source-files: CHANGELOG.md
 
 library
@@ -26,7 +33,6 @@ library
                   , EnvParser
                   , Options
   hs-source-dirs: src
-  default-language: Haskell2010
   build-depends:    base ^>=4.14.1.0
                   , higgledy
                   , lens
@@ -48,4 +54,3 @@ executable hkd-option-parsing
                   , network-uri
                   , optparse-applicative
   hs-source-dirs:   app
-  default-language: Haskell2010

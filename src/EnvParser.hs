@@ -9,7 +9,7 @@ import Control.Applicative (Alternative (empty))
 import Control.Lens
 import Data.Generic.HKD
 import Data.Maybe (isJust, isNothing)
-import Data.Monoid (Last(..), Ap(..))
+import Data.Monoid (Ap(..))
 import GHC.Generics (Generic)
 
 import Data.Foldable
