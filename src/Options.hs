@@ -90,9 +90,3 @@ type Partial a = HKD a Last
 
 emptyOptions :: Partial Options
 emptyOptions = mempty
-
-partialOptions :: Partial Options
-partialOptions = emptyOptions & field @"hostname" .~ pure "localhost"
-
-partialOptions' :: Partial Options
-partialOptions' = emptyOptions & field @"port" .~ pure 22
