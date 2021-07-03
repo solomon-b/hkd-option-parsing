@@ -23,6 +23,7 @@ data Options = Options
   , userName   :: User
   , dbUrl      :: URI
   , certPath   :: Maybe String
+  -- ^ Why isn't this being treated as optional when calling `construct`?
   , metadataDB :: URI
 } deriving (Show, Generic)
 
