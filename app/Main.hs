@@ -5,8 +5,8 @@ import Control.Applicative (Alternative (empty))
 import Control.Lens ((.~), (^.), (&), Const (..), Identity, anyOf)
 import Data.Generic.HKD
 import Data.Maybe (isJust, isNothing)
-import Data.Monoid (Last (..))
 
+import Options
 import CliParser
 import EnvParser
 
@@ -15,4 +15,4 @@ main = do
   let opts = info (parseCLI <**> helper) mempty
   options <- execParser opts
   envVars <- parseEnv
-  print $ construct $ options <> envVars
+  print $ getLast $ construct $ options <> envVars
