@@ -39,6 +39,11 @@ parseDBUri =
   let p = optional (strOption (long "db_uri" <> metavar "URI" <> help "db url"))
   in fmap (maybe emptyOptions (\str -> emptyOptions & field @"dbUrl" .~ Last (parseURI str))) p
 
+parseCertPath :: Parser (Partial Options)
+parseCertPath =
+  let p = optional (strOption (long "cert_path" <> metavar "PATH" <> help "ssl cert path"))
+  in fmap (\mstr -> emptyOptions & field @"certPath" .~ pure mstr) p
+
 parseCLI :: Parser (Partial Options)
 parseCLI = getAp $ foldMap Ap
   [ parseHostname
@@ -46,4 +51,5 @@ parseCLI = getAp $ foldMap Ap
   , parseDevmode
   , parseUser
   , parseDBUri
+  , parseCertPath
   ]
