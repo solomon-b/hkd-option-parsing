@@ -26,9 +26,13 @@ parseEnvVar parser envKey =
     Just x -> parser x
     Nothing -> emptyOptions
 
+parseOptEnvVar :: (Maybe String -> Partial Options) -> String -> IO (Partial Options)
+parseOptEnvVar parser envKey =
+  lookupEnv envKey >>= pure . parser
+
 parseEnv :: IO (Partial Options)
 parseEnv = do
   dbUrl      <- "db_url" & parseEnvVar (\str -> emptyOptions & field @"dbUrl" .~ Last (parseURI str))
   metadataDb <- "metadata_url" & parseEnvVar (\str -> emptyOptions & field @"metadataDB" .~ Last (parseURI str))
-  certPath   <- "cert_path" & parseEnvVar (\str -> emptyOptions & field @"certPath"  .~ pure (pure str))
+  certPath   <- "cert_path" & parseOptEnvVar (\str -> emptyOptions & field @"certPath"  .~ pure str)
   pure $ fold [dbUrl, metadataDb, certPath]

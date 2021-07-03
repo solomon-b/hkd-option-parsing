@@ -15,5 +15,4 @@ main = do
   let opts = info (parseCLI <**> helper) mempty
   options <- execParser opts
   envVars <- parseEnv
-  print $ options <> envVars
   print $ construct $ options <> envVars
