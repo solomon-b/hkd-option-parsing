@@ -22,13 +22,11 @@ data Options = Options
   , devMode    :: Bool
   , userName   :: User
   , dbUrl      :: URI
-  , certPath   :: String
+  , certPath   :: Maybe String
   , metadataDB :: URI
 } deriving (Show, Generic)
 
-type Partial a = HKD a  Last          -- Fields may be missing.
-type Bare    a = HKD a  Identity      -- All must be present.
-type Labels  a = HKD a (Const String) -- Every field holds a string.
+type Partial a = HKD a  Last
 
 emptyOptions :: Partial Options
 emptyOptions = mempty

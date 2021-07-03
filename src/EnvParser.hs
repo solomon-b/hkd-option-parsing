@@ -6,7 +6,7 @@ module EnvParser where
 
 import Options.Applicative
 import Control.Applicative (Alternative (empty))
-import Control.Lens ((.~), (^.), (&), Const (..), Identity, anyOf)
+import Control.Lens
 import Data.Generic.HKD
 import Data.Maybe (isJust, isNothing)
 import Data.Monoid (Last(..), Ap(..))
@@ -30,5 +30,5 @@ parseEnv :: IO (Partial Options)
 parseEnv = do
   dbUrl      <- "db_url" & parseEnvVar (\str -> emptyOptions & field @"dbUrl" .~ Last (parseURI str))
   metadataDb <- "metadata_url" & parseEnvVar (\str -> emptyOptions & field @"metadataDB" .~ Last (parseURI str))
-  certPath   <- "cert_path" & parseEnvVar (\str -> emptyOptions & field @"certPath" .~ pure str)
+  certPath   <- "cert_path" & parseEnvVar (\str -> emptyOptions & field @"certPath"  .~ pure (pure str))
   pure $ fold [dbUrl, metadataDb, certPath]

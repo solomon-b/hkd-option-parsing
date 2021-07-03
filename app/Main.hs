@@ -16,3 +16,4 @@ main = do
   options <- execParser opts
   envVars <- parseEnv
   print $ options <> envVars
+  print $ construct $ options <> envVars

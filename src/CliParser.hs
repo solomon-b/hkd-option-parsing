@@ -36,7 +36,7 @@ parseUser =
 
 parseDBUri :: Parser (Partial Options)
 parseDBUri =
-  let p = optional (strOption (long "db uri" <> metavar "URI" <> help "db url"))
+  let p = optional (strOption (long "db_uri" <> metavar "URI" <> help "db url"))
   in fmap (maybe emptyOptions (\str -> emptyOptions & field @"dbUrl" .~ Last (parseURI str))) p
 
 parseCLI :: Parser (Partial Options)
