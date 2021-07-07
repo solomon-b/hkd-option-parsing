@@ -29,8 +29,7 @@ common common-all
 extra-source-files: CHANGELOG.md
 
 library
-  exposed-modules:  CliParser
-                  , EnvParser
+  exposed-modules:  Parsers
                   , Options
   hs-source-dirs: src
   build-depends:    base ^>=4.14.1.0
