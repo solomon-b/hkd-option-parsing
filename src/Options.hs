@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveGeneric    #-}
 {-# LANGUAGE DeriveFunctor    #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving    #-}
@@ -7,8 +8,11 @@
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE TypeOperators    #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DefaultSignatures #-}
 module Options where
 
+import Data.Functor.Product
+import Data.Coerce
 import Data.Functor.Compose
 import Control.Applicative (Alternative (empty))
 import Control.Lens ((.~), (^.), (&), Const (..), Identity, anyOf)
@@ -16,6 +20,7 @@ import Data.Generic.HKD
 import Data.Maybe (isJust, isNothing)
 import GHC.Generics (Generic, Generic1)
 import Network.URI
+import Options.Applicative (Parser)
 
 newtype Last a = Last { getLast :: Maybe a }
         deriving ( Eq
@@ -29,51 +34,40 @@ newtype Last a = Last { getLast :: Maybe a }
                  , Monad
                  )
 
--- This solution is so horrible.  When using the `Partial` alias from
--- Higgledy, we wrap our data in `Last`. This represents data capture
--- that can fail.
---
--- In this demo we use `Partial Options` to construct incomplete
--- `Options` for each data source and then `<>` them together to
--- produce the complete `Option` value.
---
--- We then use `construct` to convert from `Partial Options` to `Maybe
--- Options`. This is really nice because it gets rid of all the
--- unnecessary Maybes.
+instance MaybeMonoid a => Semigroup (Last a) where
+  (<>) = coerce (maybeMappend @a)
 
--- However, this causes problems if your Options type contains a field
--- that is truly optional (Maybe MyField) AND it can be supplied by
--- multiple data sources. In this scenario the optional `MyField`
--- looks like this while in `Partial`:
---
--- Last (Maybe MyField)
---
--- So if we are merging two of these values together and the second
--- one is `Last (Just Nothing)` then `<>` will choose that value over
--- a `Last (Just (Just x))`:
---
--- > Last (Just $ Just True) <> Last (Just Nothing)
--- Last {getLast = Just Nothing}
---
--- The behavior we want is this:
--- > Last (Just $ Just True) <> Last (Just Nothing)
--- Last {getLast = Just (Just True)}
---
--- This Semigroup instance accomplishes that but looks like a potential
--- major footgun.
-instance {-# OVERLAPPING #-} Semigroup (Last (Maybe a)) where
-  (<>) (Last Nothing) b = b
-  (<>) a (Last Nothing) = a
-  (<>) a@(Last (Just _)) (Last (Just Nothing)) = a
-  (<>) (Last (Just Nothing)) b@(Last (Just _)) = b
-  (<>) (Last (Just (Just _))) b@(Last (Just (Just _))) = b
+instance forall a. MaybeMonoid a => Monoid (Last a) where
+  mempty = coerce (maybeMempty @a)
+  mappend = coerce (maybeMappend @a)
 
-instance {-# OVERLAPPABLE #-} Semigroup (Last a) where
-   a <> Last Nothing = a
-   _ <> b            = b
+class MaybeMonoid a where
+  maybeMempty :: Maybe a
+  default maybeMempty :: Maybe a
+  maybeMempty = Nothing
 
-instance Monoid (Last a) where
-   mempty = Last Nothing
+  maybeMappend :: Maybe a -> Maybe a -> Maybe a
+  default maybeMappend :: Maybe a -> Maybe a -> Maybe a
+  maybeMappend Nothing Nothing = Nothing
+  maybeMappend Nothing (Just a) = Just a
+  maybeMappend (Just a) Nothing = Just a
+  maybeMappend (Just a) (Just b) = Just b
+
+instance MaybeMonoid (Maybe a) where
+  -- NOTE:
+  maybeMempty = Just Nothing
+
+  maybeMappend Nothing b = b
+  maybeMappend a Nothing = a
+  maybeMappend a@((Just _)) ((Just Nothing)) = a
+  maybeMappend (Just Nothing) b@(Just _) = b
+  maybeMappend (Just (Just _)) b@(Just (Just _)) = b
+
+instance MaybeMonoid String
+instance MaybeMonoid Int
+instance MaybeMonoid Bool
+instance MaybeMonoid User
+instance MaybeMonoid URI
 
 newtype User = User String deriving (Show, Generic)
 
@@ -85,12 +79,15 @@ data Options = Options
   , dbUrl      :: URI
   , certPath   :: Maybe String
   , metadataDB :: URI
-} deriving (Show, Generic)
+  } deriving (Show, Generic)
 
 type Partial a = HKD a Last
 
-instance Monoid (Either String a) where
-  mempty = Left mempty
-
 emptyOptions :: Partial Options
 emptyOptions = mempty
+
+--class Applicative f => Parser f where
+--  parseOne :: Options -> f String
+--
+--instance (Parser f, Parser g) => Parser (Product f g) where
+--  parseOne = undefined

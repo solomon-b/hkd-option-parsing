@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE LambdaCase #-}
 module Main where
 
@@ -18,7 +19,7 @@ main = do
   options <- execParseCLI
   envVars <- execParseEnv
   --print $ options <> envVars
-  print $ getLast $ construct $ options <> envVars
+  print $ getLast $ construct $ envVars <> options
   --print $ runParser' (snd parsePort) ["--port", "bad_value"]
 
 runParser :: Parser a -> [String] -> Maybe a

@@ -3,6 +3,7 @@
 {-# LANGUAGE DataKinds #-}
 module Parsers where
 
+import Data.Functor.Compose
 import Options.Applicative
 import Control.Applicative (Alternative (empty))
 import Control.Lens ((.~), (^.), (&), Const (..), Identity, anyOf)
