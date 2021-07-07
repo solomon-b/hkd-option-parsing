@@ -17,7 +17,7 @@ main :: IO ()
 main = do
   options <- execParseCLI
   envVars <- execParseEnv
-  print $ options <> envVars
+  print $ getLast $ construct $ options <> envVars
 
 runParser :: Parser a -> [String] -> Maybe a
 runParser p txt =
