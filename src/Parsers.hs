@@ -14,44 +14,51 @@ import Network.URI
 
 import Options
 
-parseHostname :: Parser (Partial Options)
+parseHostname :: OptionParser
 parseHostname =
   let setting = strOption $ long "hostname" <> metavar "HOST" <> help "server hostname"
-  in fmap (\host -> emptyOptions & field @"hostname" .~ pure host) setting
+      parser = fmap (\host -> emptyOptions & field @"hostname" .~ pure host) setting
+  in (pure "hostname", parser)
 
-parsePort :: Parser (Partial Options)
+parsePort :: OptionParser
 parsePort =
   let settings = option auto $ long "port" <> value (pure 80) <> metavar "PORT" <> help "server port"
-  in fmap (\i -> emptyOptions & field @"port" .~ i) settings
+      parser = fmap (\i -> emptyOptions & field @"port" .~ i) settings
+  in (pure "port", parser)
 
-parseDevmode :: Parser (Partial Options)
+parseDevmode :: OptionParser
 parseDevmode =
   let settings = switch $ long "devmode" <> help "enable developer mode"
-  in fmap (\i -> emptyOptions & field @"devMode" .~ pure i) settings
+      parser = fmap (\i -> emptyOptions & field @"devMode" .~ pure i) settings
+  in (pure "devmode", parser)
 
-parseUser :: Parser (Partial Options)
+parseUser :: OptionParser
 parseUser =
   let settings = fmap User <$> optional (strOption (long "username" <> metavar "USER" <> help "username"))
-  in fmap (maybe emptyOptions (\u -> emptyOptions & field @"userName" .~ pure u)) settings
+      parser = fmap (maybe emptyOptions (\u -> emptyOptions & field @"userName" .~ pure u)) settings
+  in (pure "username", parser)
 
-parseDBUri :: Parser (Partial Options)
+parseDBUri :: OptionParser
 parseDBUri =
   let settings = optional (strOption (long "db_uri" <> metavar "URI" <> help "db url"))
-  in fmap (maybe emptyOptions (\str -> emptyOptions & field @"dbUrl" .~ Last (parseURI str))) settings
+      parser = fmap (maybe emptyOptions (\str -> emptyOptions & field @"dbUrl" .~ Last (parseURI str))) settings
+  in (pure "db_uri", parser)
 
-parseCertPath :: Parser (Partial Options)
+parseCertPath :: OptionParser
 parseCertPath =
   let settings = optional (strOption (long "cert_path" <> metavar "PATH" <> help "ssl cert path"))
-  in fmap (\mstr -> emptyOptions & field @"certPath" .~ pure mstr) settings
+      parser = fmap (\mstr -> emptyOptions & field @"certPath" .~ pure mstr) settings
+  in (pure "cert_path", parser)
 
-parseMetadataUrl :: Parser (Partial Options)
+parseMetadataUrl :: OptionParser
 parseMetadataUrl =
   let settings = optional (strOption (long "metadata_url" <> metavar "URI" <> help "db url"))
-  in fmap (maybe emptyOptions (\str -> emptyOptions & field @"metadataDB" .~ Last (parseURI str))) settings
+      parser = fmap (maybe emptyOptions (\str -> emptyOptions & field @"metadataDB" .~ Last (parseURI str))) settings
+  in (pure "metadata_url", parser)
 
 
 parseCLI :: Parser (Partial Options)
-parseCLI = getAp $ foldMap Ap
+parseCLI = getAp $ foldMap (Ap . snd)
   [ parseHostname
   , parsePort
   , parseDevmode
@@ -60,5 +67,11 @@ parseCLI = getAp $ foldMap Ap
   , parseCertPath
   ]
 
-parseEnv :: Parser (Partial Options)
-parseEnv = getAp $ foldMap Ap [parseDBUri, parseMetadataUrl, parseCertPath, empty]
+type OptionParser = ([String], Parser (Partial Options))
+
+parseEnv :: OptionParser
+parseEnv =
+  let parsers = [parseDBUri, parseMetadataUrl, parseCertPath]
+      parser = getAp $ foldMap (Ap . snd) parsers
+      fields = foldMap fst parsers
+  in (fields, parser)

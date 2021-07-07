@@ -18,15 +18,7 @@ main = do
   let opts = info (parseCLI <**> helper) mempty
   options <- execParser opts
   envVars <- parseEnvVars
-  print envVars
-  --print $ options <> envVars
-
-execEnvParser :: IO (Partial Options)
-execEnvParser = do
-  dbUrl      <- "db_url" & parseEnvVar parseDBUri
-  metadataDb <- "metadata_url" & parseEnvVar parseMetadataUrl
-  certPath   <- "cert_path" & parseEnvVar parseCertPath
-  pure $ fromMaybe mempty $ getAp $ foldMap Ap [dbUrl, metadataDb, certPath]
+  print $ options <> envVars
 
 runParser :: Parser a -> [String] -> Maybe a
 runParser p txt =
@@ -36,10 +28,11 @@ runParser p txt =
 catTuples :: [(a, a)] -> [a]
 catTuples = foldr (\(a, b) xs -> a:b:xs) mempty
 
-parseEnvVars :: IO (Maybe (Partial Options))
+filterEnv :: [String] -> [(String, String)] -> [(String, String)]
+filterEnv fields = filter (flip elem fields . fst)
+
+parseEnvVars :: IO (Partial Options)
 parseEnvVars = do
-  env <- catTuples . fmap (first ("--" <>)) <$> getEnvironment
-  pure $ runParser parseEnv env
-  --lookupEnv envKey >>= \case
-  --  Just x -> pure $ runParser parseEnv ["--" <> envKey, x, "--cert_path", "/home/certs"]
-  --  Nothing -> pure $ Just emptyOptions
+  let (fields, parser) = parseEnv
+  env <- catTuples . fmap (first ("--" <>)) . filterEnv fields <$> getEnvironment
+  pure $ fromMaybe emptyOptions $ runParser parser env
