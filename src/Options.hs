@@ -9,6 +9,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 module Options where
 
+import Data.Functor.Compose
 import Control.Applicative (Alternative (empty))
 import Control.Lens ((.~), (^.), (&), Const (..), Identity, anyOf)
 import Data.Generic.HKD
@@ -61,11 +62,11 @@ newtype Last a = Last { getLast :: Maybe a }
 -- This Semigroup instance accomplishes that but looks like a potential
 -- major footgun.
 instance {-# OVERLAPPING #-} Semigroup (Last (Maybe a)) where
- (<>) (Last Nothing) b = b
- (<>) a (Last Nothing) = a
- (<>) a@(Last (Just _)) (Last (Just Nothing)) = a
- (<>) (Last (Just Nothing)) b@(Last (Just _)) = b
- (<>) (Last (Just (Just _))) b@(Last (Just (Just _))) = b
+  (<>) (Last Nothing) b = b
+  (<>) a (Last Nothing) = a
+  (<>) a@(Last (Just _)) (Last (Just Nothing)) = a
+  (<>) (Last (Just Nothing)) b@(Last (Just _)) = b
+  (<>) (Last (Just (Just _))) b@(Last (Just (Just _))) = b
 
 instance {-# OVERLAPPABLE #-} Semigroup (Last a) where
    a <> Last Nothing = a
@@ -87,6 +88,9 @@ data Options = Options
 } deriving (Show, Generic)
 
 type Partial a = HKD a Last
+
+instance Monoid (Either String a) where
+  mempty = Left mempty
 
 emptyOptions :: Partial Options
 emptyOptions = mempty

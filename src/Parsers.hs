@@ -30,8 +30,8 @@ parseHostname =
 
 parsePort :: OptionParser
 parsePort =
-  let settings = option auto $ long "port" <> value (pure 80) <> metavar "PORT" <> help "server port"
-      parser = fmap (\i -> emptyOptions & field @"port" .~ i) settings
+  let settings = option auto $ long "port" <> value 80 <> metavar "PORT" <> help "server port"
+      parser = fmap (\i -> emptyOptions & field @"port" .~ pure i) settings
   in (pure "port", parser)
 
 parseDevmode :: OptionParser

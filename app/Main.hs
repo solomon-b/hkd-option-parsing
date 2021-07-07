@@ -17,12 +17,26 @@ main :: IO ()
 main = do
   options <- execParseCLI
   envVars <- execParseEnv
+  --print $ options <> envVars
   print $ getLast $ construct $ options <> envVars
+  --print $ runParser' (snd parsePort) ["--port", "bad_value"]
 
 runParser :: Parser a -> [String] -> Maybe a
 runParser p txt =
   let pinfo = info (p <**> helper) mempty
   in getParseResult $ execParserPure defaultPrefs pinfo txt
+
+runParser' :: Parser a -> [String] -> Either String a
+runParser' p txt =
+  let pinfo = info (p <**> helper) mempty
+  in getParseResult' $ execParserPure defaultPrefs pinfo txt
+
+getParseResult' :: ParserResult a -> Either String a
+getParseResult' (Success a) = Right a
+getParseResult' (CompletionInvoked c) = error "gotta figure out how to handle this"
+getParseResult' (Failure pp) =
+  let (err, _) = renderFailure pp ""
+  in Left $ takeWhile (/= '\n') err
 
 catTuples :: [(a, a)] -> [a]
 catTuples = foldr (\(a, b) xs -> a:b:xs) mempty
