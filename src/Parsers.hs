@@ -8,7 +8,7 @@ import Control.Applicative (Alternative (empty))
 import Control.Lens ((.~), (^.), (&), Const (..), Identity, anyOf)
 import Data.Generic.HKD
 import Data.Maybe (isJust, isNothing)
-import Data.Monoid (Ap(..))
+import Data.Monoid (Ap(..), Last(..))
 import GHC.Generics (Generic)
 import Network.URI
 

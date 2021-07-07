@@ -33,6 +33,7 @@ library
                   , Options
   hs-source-dirs: src
   build-depends:    base ^>=4.14.1.0
+                  , barbies
                   , higgledy
                   , lens
                   , network-uri
@@ -47,6 +48,7 @@ executable hkd-option-parsing
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:
   build-depends:    base ^>=4.14.1.0
+                  , barbies
                   , hkd-option-parsing
                   , higgledy
                   , lens
