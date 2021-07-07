@@ -14,6 +14,14 @@ import Network.URI
 
 import Options
 
+type OptionParser = ([String], Parser (Partial Options))
+
+mergeParsers :: [OptionParser] -> OptionParser
+mergeParsers parsers =
+  let parser = getAp $ foldMap (Ap . snd) parsers
+      fields = foldMap fst parsers
+  in (fields, parser)
+
 parseHostname :: OptionParser
 parseHostname =
   let setting = strOption $ long "hostname" <> metavar "HOST" <> help "server hostname"
@@ -56,22 +64,18 @@ parseMetadataUrl =
       parser = fmap (maybe emptyOptions (\str -> emptyOptions & field @"metadataDB" .~ Last (parseURI str))) settings
   in (pure "metadata_url", parser)
 
-
-parseCLI :: Parser (Partial Options)
-parseCLI = getAp $ foldMap (Ap . snd)
-  [ parseHostname
-  , parsePort
-  , parseDevmode
-  , parseUser
-  , parseDBUri
-  , parseCertPath
-  ]
-
-type OptionParser = ([String], Parser (Partial Options))
+parseCLI :: OptionParser
+parseCLI =
+  let parsers = [ parseHostname
+        , parsePort
+        , parseDevmode
+        , parseUser
+        , parseDBUri
+        , parseCertPath
+        ]
+  in mergeParsers parsers
 
 parseEnv :: OptionParser
 parseEnv =
   let parsers = [parseDBUri, parseMetadataUrl, parseCertPath]
-      parser = getAp $ foldMap (Ap . snd) parsers
-      fields = foldMap fst parsers
-  in (fields, parser)
+  in mergeParsers parsers

@@ -15,9 +15,8 @@ import Parsers
 
 main :: IO ()
 main = do
-  let opts = info (parseCLI <**> helper) mempty
-  options <- execParser opts
-  envVars <- parseEnvVars
+  options <- execParseCLI
+  envVars <- execParseEnv
   print $ options <> envVars
 
 runParser :: Parser a -> [String] -> Maybe a
@@ -31,8 +30,13 @@ catTuples = foldr (\(a, b) xs -> a:b:xs) mempty
 filterEnv :: [String] -> [(String, String)] -> [(String, String)]
 filterEnv fields = filter (flip elem fields . fst)
 
-parseEnvVars :: IO (Partial Options)
-parseEnvVars = do
+execParseEnv :: IO (Partial Options)
+execParseEnv = do
   let (fields, parser) = parseEnv
   env <- catTuples . fmap (first ("--" <>)) . filterEnv fields <$> getEnvironment
   pure $ fromMaybe emptyOptions $ runParser parser env
+
+execParseCLI :: IO (Partial Options)
+execParseCLI =
+  let opts = info (snd parseCLI <**> helper) mempty
+  in execParser opts
